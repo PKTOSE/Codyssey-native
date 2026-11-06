@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "title": "내 영화 티어리스트",
+  "tiers": [
+    {
+      "id": "tier_s",
+      "name": "S",
+      "color": "#ff7f7f",
+      "movieIds": []
+    },
+    {
+      "id": "tier_a",
+      "name": "A",
+      "color": "#ffbf7f",
+      "movieIds": []
+    },
+    {
+      "id": "tier_b",
+      "name": "B",
+      "color": "#ffdf7f",
+      "movieIds": [
+        "m_1793952519271_ryrsm"
+      ]
+    },
+    {
+      "id": "tier_c",
+      "name": "C",
+      "color": "#bfff7f",
+      "movieIds": [
+        "m_1793952510655_8gbal"
+      ]
+    },
+    {
+      "id": "tier_d",
+      "name": "D",
+      "color": "#8fdf9f",
+      "movieIds": []
+    }
+  ],
+  "movies": [
+    {
+      "id": "m_1793952510655_8gbal",
+      "title": "인터스텔라",
+      "year": 2014,
+      "poster": null
+    },
+    {
+      "id": "m_1793952519271_ryrsm",
+      "title": "인터스텔라",
+      "year": null,
+      "poster": null
+    }
+  ],
+  "unrankedMovieIds": []
+}
