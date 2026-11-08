@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MemoFlip — 일본어 단어 암기장·퀴즈</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-sub: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --success: #10b981;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 16px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding-bottom: 40px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-top: 8px;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    header p {
+      color: var(--text-sub);
+      font-size: 0.95rem;
+    }
+
+    /* 탭 메뉴 */
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* 공통 카드 패널 */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+
+    /* 버튼 스타일 */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text-main); }
+    .btn-outline:hover { background: #f1f5f9; }
+    .btn-danger { background: #fee2e2; color: var(--danger); }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #059669; }
+    .btn-wrong { background: var(--danger); color: #fff; }
+    .btn-wrong:hover { background: #dc2626; }
+
+    /* 단어 관리 폼 */
+    .form-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .form-group {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"]:focus {
+      outline: 2px solid var(--primary);
+      border-color: transparent;
+    }
+
+    .word-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .word-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .word-texts {
+      flex: 1;
+      margin-right: 12px;
+    }
+
+    .word-jp {
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: var(--text-main);
+    }
+
+    .word-ko {
+      font-size: 0.95rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .word-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* 플래시카드 화면 */
+    .flashcard-wrapper {
+      perspective: 1000px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+
+    .flashcard {
+      min-height: 220px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 2px solid var(--border);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+      transition: transform 0.3s ease, border-color 0.2s ease;
+      position: relative;
+    }
+
+    .flashcard:hover {
+      border-color: var(--primary);
+    }
+
+    .card-label {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .card-content-text {
+      font-size: 1.8rem;
+      font-weight: bold;
+      word-break: break-all;
+    }
+
+    .card-hint {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    .flashcard-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* 퀴즈 화면 */
+    .quiz-card {
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .quiz-question {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
+    .quiz-answer-box {
+      font-size: 1.3rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-top: 10px;
+      min-height: 32px;
+    }
+
+    .quiz-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .progress-bar-wrapper {
+      width: 100%;
+      height: 8px;
+      background-color: var(--border);
+      border-radius: 4px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background-color: var(--primary);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+
+    /* 데이터 관리 영역 */
+    .data-section {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* 모달 */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 999;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #fff;
+      border-radius: var(--radius);
+      max-width: 440px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .modal-content h3 {
+      margin-bottom: 10px;
+    }
+
+    .modal-content p {
+      font-size: 0.95rem;
+      color: var(--text-sub);
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>MemoFlip</h1>
+    <p>일본어 단어 암기장 &amp; 자가 진단 퀴즈</p>
+  </header>
+
+  <!-- 상단 네비게이션 탭 -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('manage')">단어 관리</button>
+    <button class="tab-btn" onclick="switchTab('flashcard')">플래시카드 학습</button>
+    <button class="tab-btn" onclick="switchTab('quiz')">퀴즈</button>
+  </nav>
+
+  <!-- 1. 단어 관리 화면 -->
+  <main id="manage-tab" class="tab-content active">
+    <section class="card">
+      <h2 style="font-size: 1.15rem; margin-bottom: 12px;">새 단어 등록</h2>
+      <form id="add-word-form" class="form-group" onsubmit="handleAddWord(event)">
+        <input type="text" id="input-jp" placeholder="일본어 단어·표현 (예: 本（ほん）)" autocomplete="off">
+        <input type="text" id="input-ko" placeholder="한국어 뜻 (예: 책)" autocomplete="off">
+        <button type="submit" class="btn btn-primary">단어 등록</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h2 style="font-size: 1.15rem;">등록된 카드 목록 (<span id="word-count">0</span>)</h2>
+      </div>
+      <ul id="word-list" class="word-list"></ul>
+    </section>
+  </main>
+
+  <!-- 2. 플래시카드 화면 -->
+  <main id="flashcard-tab" class="tab-content">
+    <section class="card" style="text-align: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 0.9rem; color: var(--text-sub);" id="fc-progress">카드 0 / 0</span>
+      </div>
+
+      <div class="flashcard-wrapper" onclick="toggleFlashcard()">
+        <div class="flashcard">
+          <div class="card-label" id="fc-side-label">문제 (일본어)</div>
+          <div class="card-content-text" id="fc-text">단어가 없습니다.</div>
+          <div class="card-hint">카드를 누르면 뒤집힙니다</div>
+        </div>
+      </div>
+
+      <div class="flashcard-nav">
+        <button class="btn btn-outline" onclick="prevFlashcard()">이전</button>
+        <button class="btn btn-primary" onclick="toggleFlashcard()" id="fc-flip-btn">정답 보기</button>
+        <button class="btn btn-outline" onclick="nextFlashcard()">다음</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 3. 퀴즈 화면 -->
+  <main id="quiz-tab" class="tab-content">
+    <section class="card">
+      <div id="quiz-in-progress">
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar-fill" id="quiz-progress-bar"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-sub); margin-bottom: 12px;">
+          <span id="quiz-progress-text">문제 1 / 20</span>
+          <span>스스로 판단하는 자가 진단형</span>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-question" id="quiz-question-text">こんにちは</div>
+          <div class="quiz-answer-box" id="quiz-answer-text" style="visibility: hidden;">안녕하세요</div>
+        </div>
+
+        <div class="quiz-actions" id="quiz-actions-before">
+          <button class="btn btn-primary" style="min-width: 140px;" onclick="revealQuizAnswer()">정답 확인</button>
+        </div>
+        <div class="quiz-actions" id="quiz-actions-after" style="display: none;">
+          <button class="btn btn-wrong" style="min-width: 110px;" onclick="recordQuizAnswer(false)">틀림 ✕</button>
+          <button class="btn btn-success" style="min-width: 110px;" onclick="recordQuizAnswer(true)">맞음 ○</button>
+        </div>
+      </div>
+
+      <!-- 퀴즈 결과 화면 -->
+      <div id="quiz-result" style="display: none; text-align: center; padding: 20px 0;">
+        <h2 style="font-size: 1.6rem; color: var(--text-main); margin-bottom: 8px;">퀴즈 완료!</h2>
+        <p style="color: var(--text-sub); margin-bottom: 24px;">모든 단어를 점검했습니다.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px;">
+          <div style="background: #f1f5f9; padding: 14px; border-radius: 8px;">
+            <div style="font-size: 0.85rem; color: var(--text-sub);">맞힌 개수</div>
+            <div style="font-size: 1.4rem; font-weight: bold; color: var(--success);" id="res-correct">0개</div>
+          </div>
+          <div style="background: #f1f5f9; padding: 14px; border-radius: 8px;">
+            <div style="font-size: 0.85rem; color: var(--text-sub);">틀린 개수</div>
+            <div style="font-size: 1.4rem; font-weight: bold; color: var(--danger);" id="res-wrong">0개</div>
+          </div>
+          <div style="background: #f1f5f9; padding: 14px; border-radius: 8px;">
+            <div style="font-size: 0.85rem; color: var(--text-sub);">정답률</div>
+            <div style="font-size: 1.4rem; font-weight: bold; color: var(--primary);" id="res-rate">0%</div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="startQuiz()">다시 풀기</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 데이터 백업/복원 영역 -->
+  <footer class="data-section">
+    <button class="btn btn-outline" onclick="exportJSON()">JSON 내보내기</button>
+    <button class="btn btn-outline" onclick="document.getElementById('file-input').click()">JSON 가져오기</button>
+    <input type="file" id="file-input" accept=".json" style="display: none;" onchange="handleFileSelect(event)">
+    <button class="btn btn-outline" style="color: var(--danger);" onclick="confirmResetToDefault()">기본 20개로 초기화</button>
+  </footer>
+</div>
+
+<!-- 수정 모달 -->
+<div class="modal-backdrop" id="edit-modal">
+  <div class="modal-content">
+    <h3>단어 카드 수정</h3>
+    <input type="hidden" id="edit-word-id">
+    <div style="margin-bottom: 12px;">
+      <label style="font-size: 0.85rem; color: var(--text-sub); display: block; margin-bottom: 4px;">일본어 단어·표현</label>
+      <input type="text" id="edit-jp" autocomplete="off">
+    </div>
+    <div style="margin-bottom: 20px;">
+      <label style="font-size: 0.85rem; color: var(--text-sub); display: block; margin-bottom: 4px;">한국어 뜻</label>
+      <input type="text" id="edit-ko" autocomplete="off">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeEditModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveEditWord()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 1. 기획서 기본 일본어 단어·표현 20개 내장 데이터
+  const DEFAULT_WORDS = [
+    { id: 1, question: "こんにちは", answer: "안녕하세요" },
+    { id: 2, question: "ありがとう", answer: "고마워요" },
+    { id: 3, question: "おはよう", answer: "좋은 아침" },
+    { id: 4, question: "こんばんは", answer: "안녕하세요 (저녁 인사)" },
+    { id: 5,誕生: "さようなら", question: "さようなら", answer: "안녕히 가세요 / 잘 가요" },
+    { id: 6, question: "はい", answer: "네" },
+    { id: 7, question: "いいえ", answer: "아니요" },
+    { id: 8, question: "私（わたし）", answer: "나 / 저" },
+    { id: 9, question: "友達（ともだち）", answer: "친구" },
+    { id: 10, question: "学校（がっこう）", answer: "학교" },
+    { id: 11, question: "先生（せんせい）", answer: "선생님" },
+    { id: 12, question: "学生（がくせい）", answer: "학생" },
+    { id: 13, question: "本（ほん）", answer: "책" },
+    { id: 14, question: "水（みず）", answer: "물" },
+    { id: 15, question: "ご飯（ごはん）", answer: "밥 / 식사" },
+    { id: 16, question: "猫（ねこ）", answer: "고양이" },
+    { id: 17, question: "犬（いぬ）", answer: "개" },
+    { id: 18, question: "今日（きょう）", answer: "오늘" },
+    { id: 19, question: "明日（あした）", answer: "내일" },
+    { id: 20, question: "食べる（たべる）", answer: "먹다" }
+  ];
+
+  const STORAGE_KEY = "memoflip_cards_data";
+  let words = [];
+
+  // 플래시카드 상태
+  let fcIndex = 0;
+  let fcIsAnswer = false;
+
+  // 퀴즈 상태
+  let quizIndex = 0;
+  let quizCorrectCount = 0;
+  let quizWrongCount = 0;
+
+  // 앱 초기화
+  function initApp() {
+    loadWords();
+    renderWordList();
+    updateFlashcard();
+    startQuiz();
+  }
+
+  // 데이터 로드 및 저장
+  function loadWords() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      words = JSON.parse(JSON.stringify(DEFAULT_WORDS));
+      saveWords();
+    } else {
+      try {
+        words = JSON.parse(raw);
+        if (!Array.isArray(words)) throw new Error("Invalid structure");
+      } catch (e) {
+        words = JSON.parse(JSON.stringify(DEFAULT_WORDS));
+        saveWords();
+      }
+    }
+  }
+
+  function saveWords() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+    document.getElementById("word-count").textContent = words.length;
+  }
+
+  // 탭 전환
+  function switchTab(tabName) {
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+
+    if (tabName === 'manage') {
+      document.querySelectorAll(".tab-btn")[0].classList.add("active");
+      document.getElementById("manage-tab").classList.add("active");
+    } else if (tabName === 'flashcard') {
+      document.querySelectorAll(".tab-btn")[1].classList.add("active");
+      document.getElementById("flashcard-tab").classList.add("active");
+      if (fcIndex >= words.length) fcIndex = 0;
+      fcIsAnswer = false;
+      updateFlashcard();
+    } else if (tabName === 'quiz') {
+      document.querySelectorAll(".tab-btn")[2].classList.add("active");
+      document.getElementById("quiz-tab").classList.add("active");
+      startQuiz();
+    }
+  }
+
+  // --- 1. 단어 관리 CRUD ---
+  function renderWordList() {
+    const listEl = document.getElementById("word-list");
+    listEl.innerHTML = "";
+    document.getElementById("word-count").textContent = words.length;
+
+    if (words.length === 0) {
+      listEl.innerHTML = `<li style="text-align: center; color: var(--text-sub); padding: 24px 0;">등록된 단어가 없습니다. 위에서 새 단어를 추가해 보세요.</li>`;
+      return;
+    }
+
+    words.forEach((item) => {
+      const li = document.createElement("li");
+      li.className = "word-item";
+      li.innerHTML = `
+        <div class="word-texts">
+          <div class="word-jp">${escapeHtml(item.question)}</div>
+          <div class="word-ko">${escapeHtml(item.answer)}</div>
+        </div>
+        <div class="word-actions">
+          <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" onclick="openEditModal(${item.id})">수정</button>
+          <button class="btn btn-danger" style="padding: 4px 10px; font-size: 0.8rem;" onclick="deleteWord(${item.id})">삭제</button>
+        </div>
+      `;
+      listEl.appendChild(li);
+    });
+  }
+
+  function handleAddWord(event) {
+    event.preventDefault();
+    const jpInput = document.getElementById("input-jp");
+    const koInput = document.getElementById("input-ko");
+
+    const question = jpInput.value.trim();
+    const answer = koInput.value.trim();
+
+    if (!question || !answer) {
+      alert("일본어 단어와 한국어 뜻을 모두 입력해 주세요.");
+      return;
+    }
+
+    const newWord = {
+      id: Date.now() + Math.floor(Math.random() * 1000),
+      question,
+      answer
+    };
+
+    words.push(newWord);
+    saveWords();
+    renderWordList();
+
+    jpInput.value = "";
+    koInput.value = "";
+    jpInput.focus();
+  }
+
+  function deleteWord(id) {
+    if (!confirm("해당 단어를 삭제하시겠습니까?")) return;
+    words = words.filter(w => w.id !== id);
+    saveWords();
+    renderWordList();
+    if (fcIndex >= words.length) fcIndex = Math.max(0, words.length - 1);
+    updateFlashcard();
+  }
+
+  function openEditModal(id) {
+    const item = words.find(w => w.id === id);
+    if (!item) return;
+
+    document.getElementById("edit-word-id").value = item.id;
+    document.getElementById("edit-jp").value = item.question;
+    document.getElementById("edit-ko").value = item.answer;
+    document.getElementById("edit-modal").classList.add("show");
+  }
+
+  function closeEditModal() {
+    document.getElementById("edit-modal").classList.remove("show");
+  }
+
+  function saveEditWord() {
+    const id = Number(document.getElementById("edit-word-id").value);
+    const question = document.getElementById("edit-jp").value.trim();
+    const answer = document.getElementById("edit-ko").value.trim();
+
+    if (!question || !answer) {
+      alert("일본어 단어와 한국어 뜻을 모두 입력해 주세요.");
+      return;
+    }
+
+    const item = words.find(w => w.id === id);
+    if (item) {
+      item.question = question;
+      item.answer = answer;
+      saveWords();
+      renderWordList();
+      updateFlashcard();
+    }
+    closeEditModal();
+  }
+
+  // --- 2. 플래시카드 기능 ---
+  function updateFlashcard() {
+    const textEl = document.getElementById("fc-text");
+    const labelEl = document.getElementById("fc-side-label");
+    const progressEl = document.getElementById("fc-progress");
+    const flipBtn = document.getElementById("fc-flip-btn");
+
+    if (words.length === 0) {
+      textEl.textContent = "등록된 단어가 없습니다.";
+      labelEl.textContent = "-";
+      progressEl.textContent = "0 / 0";
+      return;
+    }
+
+    const current = words[fcIndex];
+    progressEl.textContent = `카드 ${fcIndex + 1} / ${words.length}`;
+
+    if (fcIsAnswer) {
+      textEl.textContent = current.answer;
+      labelEl.textContent = "정답 (한국어 뜻)";
+      flipBtn.textContent = "단어 보기";
+    } else {
+      textEl.textContent = current.question;
+      labelEl.textContent = "문제 (일본어)";
+      flipBtn.textContent = "정답 보기";
+    }
+  }
+
+  function toggleFlashcard() {
+    if (words.length === 0) return;
+    fcIsAnswer = !fcIsAnswer;
+    updateFlashcard();
+  }
+
+  function prevFlashcard() {
+    if (words.length === 0) return;
+    if (fcIndex > 0) {
+      fcIndex--;
+      fcIsAnswer = false;
+      updateFlashcard();
+    }
+  }
+
+  function nextFlashcard() {
+    if (words.length === 0) return;
+    if (fcIndex < words.length - 1) {
+      fcIndex++;
+      fcIsAnswer = false;
+      updateFlashcard();
+    }
+  }
+
+  // --- 3. 퀴즈 기능 ---
+  function startQuiz() {
+    quizIndex = 0;
+    quizCorrectCount = 0;
+    quizWrongCount = 0;
+
+    const inProgressEl = document.getElementById("quiz-in-progress");
+    const resultEl = document.getElementById("quiz-result");
+
+    if (words.length === 0) {
+      inProgressEl.style.display = "block";
+      resultEl.style.display = "none";
+      document.getElementById("quiz-question-text").textContent = "등록된 단어가 없습니다.";
+      document.getElementById("quiz-answer-text").style.visibility = "hidden";
+      document.getElementById("quiz-actions-before").style.display = "none";
+      document.getElementById("quiz-actions-after").style.display = "none";
+      document.getElementById("quiz-progress-text").textContent = "0 / 0";
+      document.getElementById("quiz-progress-bar").style.width = "0%";
+      return;
+    }
+
+    inProgressEl.style.display = "block";
+    resultEl.style.display = "none";
+    renderQuizQuestion();
+  }
+
+  function renderQuizQuestion() {
+    const current = words[quizIndex];
+    document.getElementById("quiz-progress-text").textContent = `문제 ${quizIndex + 1} / ${words.length}`;
+    const progressPercent = ((quizIndex) / words.length) * 100;
+    document.getElementById("quiz-progress-bar").style.width = `${progressPercent}%`;
+
+    document.getElementById("quiz-question-text").textContent = current.question;
+    const answerEl = document.getElementById("quiz-answer-text");
+    answerEl.textContent = current.answer;
+    answerEl.style.visibility = "hidden";
+
+    document.getElementById("quiz-actions-before").style.display = "flex";
+    document.getElementById("quiz-actions-after").style.display = "none";
+  }
+
+  function revealQuizAnswer() {
+    document.getElementById("quiz-answer-text").style.visibility = "visible";
+    document.getElementById("quiz-actions-before").style.display = "none";
+    document.getElementById("quiz-actions-after").style.display = "flex";
+  }
+
+  function recordQuizAnswer(isCorrect) {
+    if (isCorrect) {
+      quizCorrectCount++;
+    } else {
+      quizWrongCount++;
+    }
+
+    quizIndex++;
+    if (quizIndex < words.length) {
+      renderQuizQuestion();
+    } else {
+      showQuizResult();
+    }
+  }
+
+  function showQuizResult() {
+    document.getElementById("quiz-in-progress").style.display = "none";
+    const resultEl = document.getElementById("quiz-result");
+    resultEl.style.display = "block";
+
+    const total = words.length;
+    const rate = total > 0 ? Math.round((quizCorrectCount / total) * 100) : 0;
+
+    document.getElementById("res-correct").textContent = `${quizCorrectCount}개`;
+    document.getElementById("res-wrong").textContent = `${quizWrongCount}개`;
+    document.getElementById("res-rate").textContent = `${rate}%`;
+    document.getElementById("quiz-progress-bar").style.width = `100%`;
+  }
+
+  // --- 4. 데이터 관리 (JSON 내보내기/가져오기, 초기화) ---
+  function exportJSON() {
+    const exportData = {
+      format: "MemoFlip-v1",
+      exportedAt: new Date().toISOString(),
+      words: words
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `memoflip_words_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        
+        // JSON 규격 검증
+        if (!parsed || !parsed.format || !Array.isArray(parsed.words)) {
+          alert("올바르지 않은 형식의 JSON 파일입니다.");
+          return;
+        }
+
+        const validWords = parsed.words.filter(w => w && typeof w.question === 'string' && typeof w.answer === 'string');
+        if (validWords.length === 0 && parsed.words.length > 0) {
+          alert("파일에 유효한 단어 데이터가 포함되어 있지 않습니다.");
+          return;
+        }
+
+        // 전체 대체 확인창
+        const confirmed = confirm("주의: JSON 파일을 가져오면 현재 등록된 모든 카드가 파일의 카드로 완전히 대체됩니다.\n계속 진행하시겠습니까?");
+        if (confirmed) {
+          words = validWords;
+          saveWords();
+          renderWordList();
+          fcIndex = 0;
+          fcIsAnswer = false;
+          updateFlashcard();
+          startQuiz();
+          alert("단어 목록을 성공적으로 복원했습니다.");
+        }
+      } catch (err) {
+        alert("JSON 파일을 파싱하는 중 오류가 발생했습니다.");
+      } finally {
+        event.target.value = ""; // 파일 선택 초기화
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function confirmResetToDefault() {
+    const confirmed = confirm("기본 단어 20개로 초기화하시겠습니까?\n현재 추가/수정된 모든 단어는 삭제됩니다.");
+    if (confirmed) {
+      words = JSON.parse(JSON.stringify(DEFAULT_WORDS));
+      saveWords();
+      renderWordList();
+      fcIndex = 0;
+      fcIsAnswer = false;
+      updateFlashcard();
+      startQuiz();
+      alert("기본 20개 단어로 복구되었습니다.");
+    }
+  }
+
+  // XSS 방지 유틸
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // 실행
+  window.addEventListener("DOMContentLoaded", initApp);
+</script>
+</body>
+</html>

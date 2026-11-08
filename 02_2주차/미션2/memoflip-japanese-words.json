@@ -1,0 +1,110 @@
+{
+  "format": "memoflip-jp-v1",
+  "words": [
+    {
+      "id": "base-1",
+      "question": "こんにちは",
+      "answer": "안녕하세요"
+    },
+    {
+      "id": "base-2",
+      "question": "ありがとう",
+      "answer": "고마워요"
+    },
+    {
+      "id": "base-3",
+      "question": "おはよう",
+      "answer": "좋은 아침"
+    },
+    {
+      "id": "base-4",
+      "question": "こんばんは",
+      "answer": "안녕하세요 (저녁 인사)"
+    },
+    {
+      "id": "base-5",
+      "question": "さようなら",
+      "answer": "안녕히 가세요 / 잘 가요"
+    },
+    {
+      "id": "base-6",
+      "question": "はい",
+      "answer": "네"
+    },
+    {
+      "id": "base-7",
+      "question": "いいえ",
+      "answer": "아니요"
+    },
+    {
+      "id": "base-8",
+      "question": "私（わたし）",
+      "answer": "나 / 저"
+    },
+    {
+      "id": "base-9",
+      "question": "友達（ともだち）",
+      "answer": "친구"
+    },
+    {
+      "id": "base-10",
+      "question": "学校（がっこう）",
+      "answer": "학교"
+    },
+    {
+      "id": "base-11",
+      "question": "先生（せんせい）",
+      "answer": "선생님"
+    },
+    {
+      "id": "base-12",
+      "question": "学生（がくせい）",
+      "answer": "학생"
+    },
+    {
+      "id": "base-13",
+      "question": "本（ほん）",
+      "answer": "책"
+    },
+    {
+      "id": "base-14",
+      "question": "水（みず）",
+      "answer": "물"
+    },
+    {
+      "id": "base-15",
+      "question": "ご飯（ごはん）",
+      "answer": "밥 / 식사"
+    },
+    {
+      "id": "base-16",
+      "question": "猫（ねこ）",
+      "answer": "고양이"
+    },
+    {
+      "id": "base-17",
+      "question": "犬（いぬ）",
+      "answer": "개"
+    },
+    {
+      "id": "base-18",
+      "question": "今日（きょう）",
+      "answer": "오늘"
+    },
+    {
+      "id": "base-19",
+      "question": "明日（あした）",
+      "answer": "내일"
+    },
+    {
+      "id": "base-20",
+      "question": "食べる（たべる）",
+      "answer": "먹다"
+    },
+    {
+      "id": "word-mw7jb16s-wqrkhjlq",
+      "question": "おおきに",
+      "answer": "고마워요"
+    }
+  ]
+}
